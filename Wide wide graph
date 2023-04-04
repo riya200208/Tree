@@ -1,0 +1,155 @@
+//Link : https://codeforces.com/contest/1805/problem/D
+
+
+import java.util.*;
+import java.io.*;
+public class Main
+{
+	public static void main(String[] args) throws IOException{
+		 BufferedReader sc=new BufferedReader(new InputStreamReader(System.in));
+         int n = Integer.parseInt(sc.readLine());
+	     ArrayList<ArrayList<Integer>>adj = new ArrayList<>();
+	     HashMap<Integer,ArrayList<Integer>>m = new HashMap<>();
+       //Intitalizing the adjacency list
+	     for(int i=0;i<n;i++)
+	        adj.add(new ArrayList<>());
+       // Added the edges to the adjacency list
+	     for(int i=0;i<n-1;i++)
+	     {
+	         String s[]=sc.readLine().split(" ");
+	         int a = Integer.parseInt(s[0])-1,b = Integer.parseInt(s[1])-1;
+	         adj.get(a).add(b);
+	         adj.get(b).add(a);
+	         
+	     }
+       //did Bfs to find one of the end node
+	     int node =0;
+	     Queue<Integer>q = new LinkedList<>();
+	     q.add(0);
+	     int visited[]=new int[n];
+	     visited[node]=1;
+	     while(!q.isEmpty())
+	     {
+	          node = q.poll();
+	       
+	         for(int el:adj.get(node))
+	         {
+	             if(visited[el]==0){
+	                 visited[el]=1;
+	                q.add(el);
+	             }
+	         }
+	     }
+		  visited = new int[n];
+		  q.add(node);
+		  int dist[]=new int[n];
+		  int node2=-1;
+		 //Did bfs again to find the another end node at the maximum distance from the previously found node
+     //Also storing the distances of the nodes from the previously found end node
+		  visited[node]=1;
+		  while(!q.isEmpty())
+		  {
+		      node2 = q.poll();
+		      for(int el:adj.get(node2))
+		      {
+		          if(visited[el]==0)
+		          {
+		              visited[el]=1;
+		              q.add(el);
+		              dist[el]=dist[node2]+1;
+		              
+		          }
+		      }
+		  }
+          visited = new int[n];
+    //checking if the nodes have larger distance from the currently found end node then storing that maximum distance
+    //Also storing the leaf nodes at a particular distance in the map
+		  q.add(node2);
+		  visited[node2]=1;
+		  int indx=1;
+		  while(!q.isEmpty())
+		  {
+		      int z = q.size();
+		      for(int i=0;i<z;i++)
+		      {
+    		      node2 = q.poll();
+    		      
+    		      for(int el:adj.get(node2))
+    		      {
+    		          if(visited[el]==0)
+    		          {
+    		              visited[el]=1;
+    		              q.add(el);
+    		              dist[el]=Math.max(dist[el],indx);
+    		              if(adj.get(el).size()==1)
+    		              {
+    		                  if(!m.containsKey(dist[el]))
+    		                  {
+    		                      m.put(dist[el],new ArrayList<>());
+    		                  }
+    		                    m.get(dist[el]).add(el);
+    		              }
+    		              
+    		          }
+    		      }
+		      }
+		      indx++;
+		  }
+		
+		  
+		  int ans[]=new int[n+1];
+		  int maxi = dist[node];
+		  visited=new int[n];
+      //Taking the end nodes contributing to the diameter into the queue because those nodes will merge first
+		  for(int i=0;i<n;i++)
+		  {
+		      if(dist[i]==maxi)
+		      {
+		          q.add(i);
+		          visited[i]=1;
+		      }
+		  }
+		  //if the distance is greater than diameter that time no nodes can be merged
+		  for(int j=maxi+1;j<=n;j++)
+		    ans[j]=n;
+       
+		   ans[maxi]=ans[maxi+1]-q.size()+1; //connecter components for the diameter
+		  for(int j=maxi-1;j>0;j--)
+		  {
+		      int sz=q.size();
+          //Adding the adjacent nodes to the queue 
+		      for(int i=0;i<sz;i++){
+		          int nd = q.poll();
+		        
+		          for(int el:adj.get(nd))
+		          {
+		              if(visited[el]==0)
+		              {
+		                  q.add(el);
+		               
+		                  visited[el]=1;
+		              }
+		          }
+		      }
+		     //Adding the untouched leaf nodes
+		      if(m.containsKey(j)){
+    		      for(int el:m.get(j))
+    		      {
+    		          if(visited[el]==0)
+    		          {
+    		             
+    		              visited[el]=1;
+    		              q.add(el);
+    		          }
+    		      }
+		      }
+          //previous ans - number of nodes merged into the previous one
+		      ans[j]=ans[j+1]-q.size();
+		  }
+		  for(int i=1;i<=n;i++)
+		    System.out.print(ans[i]+" ");
+		  System.out.println();
+		  
+		
+	}
+}
